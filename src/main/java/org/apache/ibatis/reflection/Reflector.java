@@ -82,6 +82,7 @@ public class Reflector {
     } else {
       addGetMethods(classMethods);
       addSetMethods(classMethods);
+      // 针对没有getter/setter方法的字段，通过Filed对象的反射来设置和读取字段值
       addFields(clazz);
     }
     readablePropertyNames = getMethods.keySet().toArray(new String[0]);
@@ -222,6 +223,7 @@ public class Reflector {
     setTypes.put(name, Map.entry(paramTypes[0], typeToClass(paramTypes[0])));
   }
 
+  // 将类型转换为具体的类
   private Class<?> typeToClass(Type src) {
     if (src instanceof Class) {
       return (Class<?>) src;

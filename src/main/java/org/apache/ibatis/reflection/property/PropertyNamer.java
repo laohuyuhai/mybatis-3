@@ -28,6 +28,7 @@ public final class PropertyNamer {
     // Prevent Instantiation of Static Class
   }
 
+  // 从get和set方法中获取属性的名字 （属性名的第一个字母小写）
   public static String methodToProperty(String name) {
     if (name.startsWith("is")) {
       name = name.substring(2);
@@ -49,10 +50,12 @@ public final class PropertyNamer {
     return isGetter(name) || isSetter(name);
   }
 
+  // 判断方法名是不是Get方法，这里只判断了两种，一个是get开头的，一个是is开头，如果是其他开头的，那就判断不了
   public static boolean isGetter(String name) {
     return name.startsWith("get") && name.length() > 3 || name.startsWith("is") && name.length() > 2;
   }
 
+  // 判断是不是set方法
   public static boolean isSetter(String name) {
     return name.startsWith("set") && name.length() > 3;
   }
