@@ -408,6 +408,7 @@ public class PooledDataSource implements DataSource {
           if (log.isDebugEnabled()) {
             log.debug("Returned connection " + newConn.getRealHashCode() + " to pool.");
           }
+          // 通知等待者，有新的空闲连接可以用了
           condition.signal();
         } else {
           state.accumulatedCheckoutTime += conn.getCheckoutTime();
