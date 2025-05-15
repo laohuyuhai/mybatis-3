@@ -49,6 +49,7 @@ class BaseCacheTest {
     caches.add(new SerializedCache(cache));
     caches.add(new LoggingCache(cache));
     caches.add(new ScheduledCache(cache));
+    // 对于HashSet，key相同的情况下，新元素不会覆盖旧元素，所有最终保存的就只有最初的那个cache
     assertEquals(1, caches.size());
   }
 
