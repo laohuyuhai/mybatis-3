@@ -86,21 +86,26 @@ public class BlockingCache implements Cache {
     delegate.clear();
   }
 
+  // 正常返回则代表获取到了锁，否则就会抛出异常或一直等待
   private void acquireLock(Object key) {
     CountDownLatch newLatch = new CountDownLatch(1);
     while (true) {
       CountDownLatch latch = locks.putIfAbsent(key, newLatch);
+      // latch为null，说明之前没有对key加锁，则本次获取锁成功，直接退出即可
       if (latch == null) {
+        // 获取锁成功的唯一出口
         break;
       }
+      // 否则，进入等待获取锁的步骤
       try {
         if (timeout > 0) {
+          // 如果被成功唤醒，则进入循环，尝试重新获取锁
           boolean acquired = latch.await(timeout, TimeUnit.MILLISECONDS);
           if (!acquired) {
             throw new CacheException(
                 "Couldn't get a lock in " + timeout + " for the key " + key + " at the cache " + delegate.getId());
           }
-        } else {
+        } else { // 如果没有设置超时时间，就会一直等待，直到被唤醒或者被打断，被唤醒后进入循环，尝试重新获取锁
           latch.await();
         }
       } catch (InterruptedException e) {
