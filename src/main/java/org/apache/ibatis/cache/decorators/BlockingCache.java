@@ -37,7 +37,9 @@ import org.apache.ibatis.cache.CacheException;
 public class BlockingCache implements Cache {
 
   private long timeout;
+  // 装饰器模式
   private final Cache delegate;
+  // 保证多线程操作的线程安全性
   private final ConcurrentHashMap<Object, CountDownLatch> locks;
 
   public BlockingCache(Cache delegate) {
@@ -60,6 +62,18 @@ public class BlockingCache implements Cache {
     try {
       delegate.putObject(key, value);
     } finally {
+      // 为什么这里没加锁，却要释放锁
+      // 1. 锁的获取由 getObject 完成
+      //    只有在缓存未命中（即 getObject 找不到值）时，线程才会去获取锁。
+      //    获取锁之后，该线程会负责从数据库加载数据并调用 putObject。
+      //    因此，只有真正执行填充缓存操作的线程才会走到 putObject，而它已经持有锁。
+      // 2. 释放锁是为了唤醒等待线程
+      //    当前线程在完成 putObject 后调用 releaseLock，其核心目的是：
+      //    告诉其他正在等待这个 key 的线程：“我已经填好数据了，你们可以继续争抢锁并读取数据了。”
+      //    通过 latch.countDown() 来唤醒所有阻塞在 await() 上的线程。
+      // 3. 为何不在 putObject 中获取锁？
+      //    如果在 putObject 中也获取锁，会导致重复加锁、死锁或资源浪费。
+      //    锁机制的核心是“谁查数据库谁加锁”，所以锁应该由 getObject 获取，而不是 putObject。
       releaseLock(key);
     }
   }
@@ -67,7 +81,10 @@ public class BlockingCache implements Cache {
   @Override
   public Object getObject(Object key) {
     acquireLock(key);
+    // 只要没抛出异常，就说明获取锁成功
     Object value = delegate.getObject(key);
+    // 如果value是null, 说明缓存中没有这个key对应的value，则需要去数据库中查询,这个时候锁是没有释放的
+    // 最终的释放操作是在putObject方法中
     if (value != null) {
       releaseLock(key);
     }
@@ -119,6 +136,8 @@ public class BlockingCache implements Cache {
     if (latch == null) {
       throw new IllegalStateException("Detected an attempt at releasing unacquired lock. This should never happen.");
     }
+    // 前面remove之后，不就把锁给释放了吗，那为什么这里还要countDown呢
+    // 其实这是为了通知那些处在await状态的线程，告诉他们我释放锁了，你们可以去争抢了
     latch.countDown();
   }
 
