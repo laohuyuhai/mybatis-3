@@ -258,6 +258,7 @@ public class DefaultVFS extends VFS {
       }
       return null;
     }
+    // 通过设置长度的方式进行裁减
     jarUrl.setLength(index + 4);
     if (log.isDebugEnabled()) {
       log.debug("Extracted JAR URL: " + jarUrl);

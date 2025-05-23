@@ -215,7 +215,9 @@ public class ClassLoaderWrapper {
 
           return Class.forName(name, true, cl);
 
-        } catch (ClassNotFoundException e) {
+        }
+        // 当前的类加载器没有对应的类，就尝试下一个，通过忽略出现的异常来保持循环不被中断
+        catch (ClassNotFoundException e) {
           // we'll ignore this until all classloaders fail to locate the class
         }
 
@@ -227,6 +229,13 @@ public class ClassLoaderWrapper {
 
   }
 
+  // 返回一组按优先级排序的类加载器：
+  //  传入的 classLoader
+  //  defaultClassLoader
+  //  当前线程上下文类加载器（Thread.currentThread().getContextClassLoader()）
+  //  当前类的类加载器（getClass().getClassLoader()）
+  //  系统类加载器（systemClassLoader）
+  //  这种组合方式提高了在复杂环境中加载类和资源的成功率。
   ClassLoader[] getClassLoaders(ClassLoader classLoader) {
     return new ClassLoader[] { classLoader, defaultClassLoader, Thread.currentThread().getContextClassLoader(),
         getClass().getClassLoader(), systemClassLoader };
