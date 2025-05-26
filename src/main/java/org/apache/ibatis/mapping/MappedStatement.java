@@ -32,7 +32,7 @@ import org.apache.ibatis.session.Configuration;
  * @author Clinton Begin
  */
 // 各个实体的mapper文件，最终封装成MappedStatement对象,用于封装一条完整的 SQL 映射语句的所有信息
-// 那是不是意味着一个mapper文件，最终会生成多个MappedStatement对象？
+// 一个mapper文件，最终会生成多个MappedStatement对象，每个sql语句生成一个
 public final class MappedStatement {
 
   // 对应mapper的xml文件，譬如：com/example/mapper/UserMapper.xml
@@ -40,6 +40,7 @@ public final class MappedStatement {
   private Configuration configuration;
   // 唯一标识符，通常是接口方法全限定名（如：com.example.mapper.UserMapper.selectUserById）
   private String id;
+  // 设置一次从数据库获取的记录数
   private Integer fetchSize;
   private Integer timeout;
   private StatementType statementType;
@@ -53,7 +54,9 @@ public final class MappedStatement {
   private boolean resultOrdered;
   private SqlCommandType sqlCommandType;
   private KeyGenerator keyGenerator;
+  // 插入操作后需要回填的主键属性名（如 "id"）
   private String[] keyProperties;
+  // 插入操作后需要回填的主键属性对应的列名（如 "id"）
   private String[] keyColumns;
   private boolean hasNestedResultMaps;
   private String databaseId;
@@ -66,6 +69,7 @@ public final class MappedStatement {
     // constructor disabled
   }
 
+  // MappedStatement 是不可变对象，所有属性通过其静态内部类 Builder 构建
   public static class Builder {
     private final MappedStatement mappedStatement = new MappedStatement();
 

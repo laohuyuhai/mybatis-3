@@ -109,6 +109,7 @@ public abstract class BaseExecutor implements Executor {
 
   @Override
   public int update(MappedStatement ms, Object parameter) throws SQLException {
+    // 这个错误上下文有点意思
     ErrorContext.instance().resource(ms.getResource()).activity("executing an update").object(ms.getId());
     if (closed) {
       throw new ExecutorException("Executor was closed.");
