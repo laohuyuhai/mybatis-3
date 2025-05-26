@@ -31,10 +31,14 @@ import org.apache.ibatis.session.Configuration;
 /**
  * @author Clinton Begin
  */
+// 各个实体的mapper文件，最终封装成MappedStatement对象,用于封装一条完整的 SQL 映射语句的所有信息
+// 那是不是意味着一个mapper文件，最终会生成多个MappedStatement对象？
 public final class MappedStatement {
 
+  // 对应mapper的xml文件，譬如：com/example/mapper/UserMapper.xml
   private String resource;
   private Configuration configuration;
+  // 唯一标识符，通常是接口方法全限定名（如：com.example.mapper.UserMapper.selectUserById）
   private String id;
   private Integer fetchSize;
   private Integer timeout;
