@@ -94,6 +94,7 @@ public class ErrorContext {
     return this;
   }
 
+  // 上面的一切设置,都是为了这里的toString()方法,把错误信息详细的打印出来才是最重要的
   @Override
   public String toString() {
     StringBuilder description = new StringBuilder();

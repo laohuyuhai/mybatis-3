@@ -87,6 +87,7 @@ public enum AutoMappingUnknownColumnBehavior {
   }
 
   private static class LogHolder {
+    // 虽然是私有的，但是在外部类中也是可以直接访问的
     private static final Log log = LogFactory.getLog(AutoMappingUnknownColumnBehavior.class);
   }
 

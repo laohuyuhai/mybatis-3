@@ -73,6 +73,7 @@ public class DefaultSqlSession implements SqlSession {
   public <T> T selectOne(String statement, Object parameter) {
     // Popular vote was to return null on 0 results and throw exception on too many.
     List<T> list = this.selectList(statement, parameter);
+    // 哈哈，没想到开源代码也用这种复用的方式，不过他们要严谨一些，判断了列表中的元素数量，数量不对直接抛异常
     if (list.size() == 1) {
       return list.get(0);
     }
@@ -147,6 +148,7 @@ public class DefaultSqlSession implements SqlSession {
     return selectList(statement, parameter, rowBounds, Executor.NO_RESULT_HANDLER);
   }
 
+  // RowBounds是用来控制分页的，它的主要属性是limit和offset
   private <E> List<E> selectList(String statement, Object parameter, RowBounds rowBounds, ResultHandler handler) {
     try {
       MappedStatement ms = configuration.getMappedStatement(statement);
@@ -288,12 +290,21 @@ public class DefaultSqlSession implements SqlSession {
 
   @Override
   public <T> T getMapper(Class<T> type) {
+    // getMapper 不直接实例化接口，而是通过动态代理生成接口的实现类。调用接口方法时，实际由 SqlSession 执行对应的 SQL
     return configuration.getMapper(type, this);
   }
 
   @Override
   public Connection getConnection() {
     try {
+      // MyBatis 默认使用 autoCommit = false（手动提交），即通过 JdbcTransaction 获取连接时设置为非自动提交。
+      //  第一次调用 getConnection() 时会触发 openConnection()，并根据配置设置事务隔离级别和 autoCommit。
+      //  只要不调用 commit() 或 rollback()，事务就会一直存在，直到连接关闭或超时。
+      //  autoCommit=on, 每条 SQL 语句被视为一个独立事务，执行完后立即提交。不会显式开启事务
+
+      // 不是所有的连接一开始就有事务，但：
+      //  只要执行了 DML 语句且 autocommit=off，就会自动创建事务。
+      //  MyBatis 默认使用手动提交模式，因此每次获取连接后执行 SQL 通常都会进入事务状态。
       return executor.getTransaction().getConnection();
     } catch (SQLException e) {
       throw ExceptionFactory.wrapException("Error getting a new connection.  Cause: " + e, e);
@@ -312,6 +323,10 @@ public class DefaultSqlSession implements SqlSession {
     cursorList.add(cursor);
   }
 
+  // 这个方法是 MyBatis 控制事务行为的关键逻辑之一。它确保：
+  //  在手动提交模式下，只有真正发生过数据更改（insert/update/delete）才提交；
+  //  提供强制提交/回滚的能力，用于特殊场景；
+  //  避免在自动提交模式下不必要的 commit/rollback 调用。
   private boolean isCommitOrRollbackRequired(boolean force) {
     return !autoCommit && dirty || force;
   }

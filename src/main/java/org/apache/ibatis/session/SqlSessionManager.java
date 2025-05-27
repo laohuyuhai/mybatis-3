@@ -41,6 +41,7 @@ public class SqlSessionManager implements SqlSessionFactory, SqlSession {
 
   private SqlSessionManager(SqlSessionFactory sqlSessionFactory) {
     this.sqlSessionFactory = sqlSessionFactory;
+    // JDK的动态代理用的好多啊，到处都是
     this.sqlSessionProxy = (SqlSession) Proxy.newProxyInstance(SqlSessionFactory.class.getClassLoader(),
         new Class[] { SqlSession.class }, new SqlSessionInterceptor());
   }

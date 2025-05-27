@@ -22,6 +22,9 @@ import org.apache.ibatis.exceptions.PersistenceException;
  */
 public class SqlSessionException extends PersistenceException {
 
+  // serialVersionUID其实写多少都行，主要是为了序列化和反序列化
+  // 如果你不写，Java就会默认生成一个, 默认生成的serialVersionUID是1L，但是一旦修改了类的字段，就会自动生成新的serialVersionUID，导致反序列化失败
+  // 所以这个东西写啥都行，但是不要乱改，除非你想让反序列化跪掉
   private static final long serialVersionUID = 3833184690240265047L;
 
   public SqlSessionException() {
