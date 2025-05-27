@@ -56,6 +56,7 @@ public class MapperMethod {
 
   public Object execute(SqlSession sqlSession, Object[] args) {
     Object result;
+    // 枚举类型作为switch参数
     switch (command.getType()) {
       case INSERT: {
         Object param = method.convertArgsToSqlCommandParam(args);
@@ -111,7 +112,9 @@ public class MapperMethod {
       result = rowCount;
     } else if (Long.class.equals(method.getReturnType()) || Long.TYPE.equals(method.getReturnType())) {
       result = (long) rowCount;
-    } else if (Boolean.class.equals(method.getReturnType()) || Boolean.TYPE.equals(method.getReturnType())) {
+    }
+    // Boolean.TYPE 代表的事基本类型boolean的class对象
+    else if (Boolean.class.equals(method.getReturnType()) || Boolean.TYPE.equals(method.getReturnType())) {
       result = rowCount > 0;
     } else {
       throw new BindingException(
@@ -182,6 +185,7 @@ public class MapperMethod {
     if (!arrayComponentType.isPrimitive()) {
       return list.toArray((E[]) array);
     }
+    // 要求返回的是基本类型，这时候不能直接使用toArray转换，要一个一个加进去
     for (int i = 0; i < list.size(); i++) {
       Array.set(array, i, list.get(i));
     }

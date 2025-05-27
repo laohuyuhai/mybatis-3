@@ -58,6 +58,10 @@ public class MapperProxy<T> implements InvocationHandler, Serializable {
   @Override
   public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
     try {
+      // 如果调用的是 Object 类的方法（如 toString、hashCode 等），直接在当前类中执行该方法
+      // 处理 Object 类的方法
+      //  每个 Java 类都继承自 Object，所以一些通用方法如 toString()、hashCode()、equals() 会被代理。
+      //  这里判断如果调用的是 Object 类定义的方法，则直接在当前 MapperProxy 实例上执行这些方法，避免进入 SQL 执行流程。
       if (Object.class.equals(method.getDeclaringClass())) {
         return method.invoke(this, args);
       }
