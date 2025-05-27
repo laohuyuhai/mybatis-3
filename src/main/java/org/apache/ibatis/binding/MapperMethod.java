@@ -216,6 +216,7 @@ public class MapperMethod {
 
   public static class SqlCommand {
 
+    // 对应的 SQL 映射语句 ID（即 XML 中的 id 或注解中的 value）
     private final String name;
     private final SqlCommandType type;
 
