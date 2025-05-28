@@ -86,6 +86,7 @@ public class DefaultParameterHandler implements ParameterHandler {
     return parameterObject;
   }
 
+  // 用于将参数设置到 SQL 的 PreparedStatement 中
   @SuppressWarnings({ "rawtypes", "unchecked" })
   @Override
   public void setParameters(PreparedStatement ps) {
