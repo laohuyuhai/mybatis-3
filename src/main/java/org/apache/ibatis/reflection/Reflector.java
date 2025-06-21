@@ -304,6 +304,7 @@ public class Reflector {
         addUniqueMethods(uniqueMethods, anInterface.getMethods());
       }
 
+      // 接口可以有多个，但是继承的类只有一个
       currentClass = currentClass.getSuperclass();
     }
 
@@ -319,6 +320,7 @@ public class Reflector {
         // check to see if the method is already known
         // if it is known, then an extended class must have
         // overridden a method
+        // 如果子类中已经覆盖了该方法，那就保留子类的方法签名
         if (!uniqueMethods.containsKey(signature)) {
           uniqueMethods.put(signature, currentMethod);
         }
