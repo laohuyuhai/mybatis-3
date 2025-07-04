@@ -28,6 +28,8 @@ public class MapUtil {
    * @see <a href=
    *      "https://bugs.openjdk.java.net/browse/JDK-8161372">https://bugs.openjdk.java.net/browse/JDK-8161372</a>
    */
+  // 之所以这样脱裤子放屁，是因为 ConcurrentHashMap的computeIfAbsent方法在当key存在时在JDK 8中存在性能问题
+  // 参考这篇文章：https://blog.csdn.net/wu_weijie/article/details/121899160
   public static <K, V> V computeIfAbsent(Map<K, V> map, K key, Function<K, V> mappingFunction) {
     V value = map.get(key);
     if (value != null) {
