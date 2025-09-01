@@ -68,6 +68,9 @@ public class DefaultObjectFactory implements ObjectFactory, Serializable {
           throw e;
         }
       }
+      // 这里获取有参的构造函数是要考虑参数顺序的
+      // 因为Java的构造函数是基于参数类型和顺序来区分的
+      // 例如，一个构造函数Constructor(String, Integer)和另一个Constructor(Integer, String)是两个不同的构造函数，它们的行为可能完全不同。
       constructor = type.getDeclaredConstructor(constructorArgTypes.toArray(new Class[0]));
       try {
         return constructor.newInstance(constructorArgs.toArray(new Object[0]));
