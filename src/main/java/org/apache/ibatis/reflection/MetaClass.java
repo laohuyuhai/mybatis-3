@@ -171,6 +171,7 @@ public class MetaClass {
       if (propertyName != null) {
         builder.append(propertyName);
         builder.append(".");
+        // 这里之所以大费周章的生成MetaClass，是因为生成时做了缓存，后续可以直接使用
         MetaClass metaProp = metaClassForProperty(propertyName);
         metaProp.buildProperty(prop.getChildren(), builder);
       }
