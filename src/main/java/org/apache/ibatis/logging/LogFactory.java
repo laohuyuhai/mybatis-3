@@ -30,8 +30,10 @@ public final class LogFactory {
   public static final String MARKER = "MYBATIS";
 
   private static final ReentrantLock lock = new ReentrantLock();
+  // 第三方日志组件“适配器”的构造方法
   private static Constructor<? extends Log> logConstructor;
 
+  // 日志加载顺序是有优先级的，前一个可以，就不再尝试下一个
   static {
     tryImplementation(LogFactory::useSlf4jLogging);
     tryImplementation(LogFactory::useCommonsLogging);
@@ -107,6 +109,7 @@ public final class LogFactory {
     lock.lock();
     try {
       Constructor<? extends Log> candidate = implClass.getConstructor(String.class);
+      // 下面要打印当前类（LogFactory）的日志了，所以这里创建了一个当前LogFactory的日志对象
       Log log = candidate.newInstance(LogFactory.class.getName());
       if (log.isDebugEnabled()) {
         log.debug("Logging initialized using '" + implClass + "' adapter.");
