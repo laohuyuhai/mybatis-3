@@ -43,6 +43,7 @@ public final class PreparedStatementLogger extends BaseJdbcLogger implements Inv
   @Override
   public Object invoke(Object proxy, Method method, Object[] params) throws Throwable {
     try {
+      // 只有当方法没有被重写，直接继承自Object时，才会返回Object.class
       if (Object.class.equals(method.getDeclaringClass())) {
         return method.invoke(this, params);
       }

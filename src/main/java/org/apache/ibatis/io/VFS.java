@@ -45,6 +45,7 @@ public abstract class VFS {
 
   /** Singleton instance holder. */
   private static class VFSHolder {
+    // 仅在类初始化的时候调用一次，所以线程安全，且是单例
     static final VFS INSTANCE = createVFS();
 
     @SuppressWarnings("unchecked")

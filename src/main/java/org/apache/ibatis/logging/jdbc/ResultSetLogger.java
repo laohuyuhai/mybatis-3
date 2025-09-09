@@ -72,6 +72,7 @@ public final class ResultSetLogger extends BaseJdbcLogger implements InvocationH
           if (isTraceEnabled()) {
             ResultSetMetaData rsmd = rs.getMetaData();
             final int columnCount = rsmd.getColumnCount();
+            // 只打印一次表头，大牛的写法和我们普通人是一样的，朴实
             if (first) {
               first = false;
               printColumnHeaders(rsmd, columnCount);

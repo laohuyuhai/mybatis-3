@@ -670,6 +670,7 @@ public abstract class AbstractSQL<T> {
         }
       };
 
+      // 经典写法，定义一个抽象方法，各个枚举对象实现抽象方法
       protected abstract void appendClause(SafeAppendable builder, String offset, String limit);
 
     }

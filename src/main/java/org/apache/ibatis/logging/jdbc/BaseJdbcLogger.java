@@ -142,6 +142,18 @@ public abstract class BaseJdbcLogger {
     }
   }
 
+  // 这个方法的目的是生成带层次结构的日志前缀，效果如下：
+  // 假设queryStack为2：
+  // 对于输入（SQL执行前）：====>
+  // 对于输出（SQL执行后）：<====
+  // 假设queryStack为3：
+  // 对于输入（SQL执行前）：======>
+  // 对于输出（SQL执行后）：<======
+  // 这种设计可以帮助开发者在查看日志时：
+  // 清楚地看到SQL执行的层次结构（通过=的数量）
+  // 区分SQL执行前和执行后的日志（通过>和<符号）
+  // 更容易跟踪嵌套的SQL调用
+  // 这是MyBatis日志系统的一个小但重要的部分，有助于提高日志的可读性。
   private String prefix(boolean isInput) {
     char[] buffer = new char[queryStack * 2 + 2];
     Arrays.fill(buffer, '=');

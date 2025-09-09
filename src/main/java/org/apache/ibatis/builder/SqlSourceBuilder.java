@@ -54,6 +54,8 @@ public class SqlSourceBuilder extends BaseBuilder {
     return new StaticSqlSource(configuration, sql, handler.getParameterMappings());
   }
 
+  // 这个方法会移除多余的空格（空格、制表符\t、换行符\n、回车符\r、换页符\f），并不是把空格完全消除，只是删除多余的
+  // 行首行尾的空格会被删掉，行中间的多个空格会变成一个，多行会变成一行
   public static String removeExtraWhitespaces(String original) {
     StringTokenizer tokenizer = new StringTokenizer(original);
     StringBuilder builder = new StringBuilder();
