@@ -131,6 +131,16 @@ public class ClassLoaderWrapper {
    * @return the resource or null
    */
   InputStream getResourceAsStream(String resource, ClassLoader[] classLoader) {
+    // 当 systemClassLoader 无法找到某个类时，这通常意味着 Extension ClassLoader 和 Bootstrap ClassLoader 也无法找到该类。这是因为 Java 类加载器的双亲委派模型（Parent Delegation Model）：
+    // 双亲委派机制：
+    //  当一个类加载器收到类加载请求时，它首先不会自己尝试加载这个类
+    //  而是把这个请求委派给父类加载器去完成
+    //  只有当父类加载器无法加载时，子类加载器才会尝试自己加载
+    // 类加载器层次结构：
+    //  Bootstrap ClassLoader（启动类加载器）：加载核心 Java 类库（如 rt.jar）
+    //  Extension ClassLoader（扩展类加载器）：加载 <JAVA_HOME>/lib/ext 目录中的类
+    //  Application/System ClassLoader（应用程序类加载器）：加载 classpath 下的类
+    //  Bootstrap ClassLoader → Extension ClassLoader → System ClassLoader
     for (ClassLoader cl : classLoader) {
       if (null != cl) {
 

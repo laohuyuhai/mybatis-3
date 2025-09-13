@@ -53,6 +53,7 @@ public class DefaultVFS extends VFS {
     return true;
   }
 
+  // 列出指定URL路径下的所有资源名称,path是用来过滤的，要求只返回path路径下的资源
   @Override
   public List<String> list(URL url, String path) throws IOException {
     InputStream is = null;
