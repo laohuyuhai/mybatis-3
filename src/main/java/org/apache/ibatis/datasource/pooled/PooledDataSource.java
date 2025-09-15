@@ -400,6 +400,7 @@ public class PooledDataSource implements DataSource {
           if (!conn.getRealConnection().getAutoCommit()) {
             conn.getRealConnection().rollback();
           }
+          // 放了一个新的PooledConnection进去，但是底层用的connection还是同一个
           PooledConnection newConn = new PooledConnection(conn.getRealConnection(), this);
           state.idleConnections.add(newConn);
           newConn.setCreatedTimestamp(conn.getCreatedTimestamp());
@@ -477,6 +478,7 @@ public class PooledDataSource implements DataSource {
                 log.debug("Bad connection. Could not roll back");
               }
             }
+            // 这里其实并没有创建新的真正的连接，本质还是复用，只是PooledConnection是新的
             conn = new PooledConnection(oldestActiveConnection.getRealConnection(), this);
             conn.setCreatedTimestamp(oldestActiveConnection.getCreatedTimestamp());
             conn.setLastUsedTimestamp(oldestActiveConnection.getLastUsedTimestamp());
@@ -495,6 +497,7 @@ public class PooledDataSource implements DataSource {
                 log.debug("Waiting as long as " + poolTimeToWait + " milliseconds for connection.");
               }
               long wt = System.currentTimeMillis();
+              // 如果在等待期间，其他线程调用了当前线程的 interrupt() 方法，就会抛出 InterruptedException
               if (!condition.await(poolTimeToWait, TimeUnit.MILLISECONDS)) {
                 log.debug("Wait failed...");
               }
@@ -582,11 +585,13 @@ public class PooledDataSource implements DataSource {
           statement.executeQuery(poolPingQuery).close();
         }
         if (!realConn.getAutoCommit()) {
+          // 因为不想造成任何实际的影响，所以这里进行了rollback
           realConn.rollback();
         }
         if (log.isDebugEnabled()) {
           log.debug("Connection " + conn.getRealHashCode() + " is GOOD!");
         }
+        // 只要前面的整个过程没有出现异常，说明ping通了，连接是有效的
       } catch (Exception e) {
         log.warn("Execution of ping query '" + poolPingQuery + "' failed: " + e.getMessage());
         try {

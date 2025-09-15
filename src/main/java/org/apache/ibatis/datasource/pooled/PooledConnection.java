@@ -262,6 +262,7 @@ class PooledConnection implements InvocationHandler {
 
   }
 
+  // 只是检查下valid，就封装了一个方法，说明方法不怕短，重要的是能从方法名一眼明其意，直到这样做是为啥
   private void checkConnection() throws SQLException {
     if (!valid) {
       throw new SQLException("Error accessing PooledConnection. Connection is invalid.");
