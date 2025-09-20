@@ -64,6 +64,40 @@ public class BlockingCache implements Cache {
     }
   }
 
+  /**
+   *
+   * 设计原因
+   * 这种设计的原因是基于以下假设和场景：
+   * 1. 缓存未命中场景
+   * 当缓存中没有对应键的值时（value == null）：
+   * 当前线程需要去加载数据（比如查询数据库）
+   * 其他线程可能也在等待这个数据
+   * 锁需要保持到数据被成功放入缓存后才释放
+   * 2. 缓存命中场景
+   * 当缓存中有对应键的值时（value != null）：
+   * 直接返回缓存中的值
+   * 不需要加载数据，所以可以立即释放锁
+   * 其他线程可以继续操作这个键
+   *
+   * 如果总是释放锁：
+   * 这样会导致问题：
+   * 如果value为null（缓存未命中），其他线程会立即获取锁并也去加载数据
+   * 失去"阻塞其他线程直到数据加载完成"的意义
+   * 造成缓存击穿，多个线程同时查询数据库
+   *
+   * 实际的数据加载流程
+   * 正确的流程应该是：
+   * getObject 发现缓存未命中（返回null）
+   * 调用方去数据库加载数据
+   * 调用 putObject 将数据放入缓存
+   * 在 putObject 中释放锁
+   * 这种设计确保了只有成功将数据放入缓存后才释放锁，从而实现阻塞效果。
+   *
+   * @param key
+   *          The key
+   *
+   * @return
+   */
   @Override
   public Object getObject(Object key) {
     acquireLock(key);
@@ -86,10 +120,12 @@ public class BlockingCache implements Cache {
     delegate.clear();
   }
 
+  // 只要不抛出异常，就说明成功获取了锁
   private void acquireLock(Object key) {
     CountDownLatch newLatch = new CountDownLatch(1);
     while (true) {
       CountDownLatch latch = locks.putIfAbsent(key, newLatch);
+      // 如果返回null，说明之前没有该key的锁，成功获取锁 （成功获取锁的出口只有这里）
       if (latch == null) {
         break;
       }
