@@ -29,7 +29,20 @@ import org.apache.ibatis.cache.Cache;
  * Thanks to Dr. Heinz Kabutz for his guidance here.
  *
  * @author Clinton Begin
+ *
+ * 主要优势
+ * 1. 自动内存管理
+ * 不需要手动设置缓存大小
+ * 根据JVM内存情况自动调整缓存容量
+ * 避免OutOfMemoryError
+ * 2. 性能与内存的平衡
+ * 热数据通过强引用保护，保持较高命中率
+ * 冷数据在内存压力下自动回收，释放内存空间
+ * 3. 透明的缓存失效
+ * 对应用层透明，无需处理缓存失效逻辑
+ * 自动处理内存压力下的缓存清理
  */
+// SoftCache 的核心意义在于提供一种自适应内存管理的缓存策略，让应用在享受缓存性能提升的同时，不会因为缓存占用过多内存而导致系统不稳定
 public class SoftCache implements Cache {
   private final Deque<Object> hardLinksToAvoidGarbageCollection;
   private final ReferenceQueue<Object> queueOfGarbageCollectedEntries;
