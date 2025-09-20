@@ -182,6 +182,8 @@ public class MapperMethod {
     if (!arrayComponentType.isPrimitive()) {
       return list.toArray((E[]) array);
     }
+    // 基本类型采用下面这种方式创建数组，譬如int[]
+    // 由于泛型擦除，List<Integer> 无法直接转换为 int[]，需要手动设置每个元素
     for (int i = 0; i < list.size(); i++) {
       Array.set(array, i, list.get(i));
     }
@@ -200,6 +202,7 @@ public class MapperMethod {
     return result;
   }
 
+  // 对get方法的行为以及key的类型做了定制
   public static class ParamMap<V> extends HashMap<String, V> {
 
     private static final long serialVersionUID = -2212268410512043556L;
@@ -254,9 +257,11 @@ public class MapperMethod {
       if (configuration.hasStatement(statementId)) {
         return configuration.getMappedStatement(statementId);
       }
+      // 如果当前接口就是声明方法的类，那么在上面就应该能找到，走到这里，那就是没找到，不用找了，返回null
       if (mapperInterface.equals(declaringClass)) {
         return null;
       }
+      // 循环递归往上找，直到找到为止
       for (Class<?> superInterface : mapperInterface.getInterfaces()) {
         if (declaringClass.isAssignableFrom(superInterface)) {
           MappedStatement ms = resolveMappedStatement(superInterface, methodName, declaringClass, configuration);

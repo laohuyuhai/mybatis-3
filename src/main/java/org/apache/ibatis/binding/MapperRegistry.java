@@ -58,6 +58,7 @@ public class MapperRegistry {
   }
 
   public <T> void addMapper(Class<T> type) {
+    // 要求必须是接口，怪不得所有的Mapper类都写成了interface
     if (type.isInterface()) {
       if (hasMapper(type)) {
         throw new BindingException("Type " + type + " is already known to the MapperRegistry.");
@@ -118,6 +119,7 @@ public class MapperRegistry {
    * @since 3.2.2
    */
   public void addMappers(String packageName) {
+    // 加载某个包下面所有的mapper接口
     addMappers(packageName, Object.class);
   }
 
