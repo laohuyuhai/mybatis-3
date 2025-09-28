@@ -33,6 +33,7 @@ import org.apache.ibatis.type.TypeHandlerRegistry;
  */
 public abstract class BaseBuilder {
   protected final Configuration configuration;
+  // 这里对final变量选择了在构造函数中进行赋值，如果在这里赋值（也就是声明时赋值），那么在构造函数中就不能重新赋值
   protected final TypeAliasRegistry typeAliasRegistry;
   protected final TypeHandlerRegistry typeHandlerRegistry;
 
@@ -73,6 +74,7 @@ public abstract class BaseBuilder {
 
   protected ResultSetType resolveResultSetType(String alias) {
     try {
+      // valueOf函数是大小写敏感的，alias必须和枚举常量的名称完全一样才行
       return alias == null ? null : ResultSetType.valueOf(alias);
     } catch (IllegalArgumentException e) {
       throw new BuilderException("Error resolving ResultSetType. Cause: " + e, e);
