@@ -72,11 +72,13 @@ public class ForEachSqlNode implements SqlNode {
     if (iterable == null || !iterable.iterator().hasNext()) {
       return true;
     }
+    // 这里判断是否第一次循环的方式，也很朴素
     boolean first = true;
     applyOpen(context);
     int i = 0;
     for (Object o : iterable) {
       DynamicContext oldContext = context;
+      // 使用PrefixedContext添加分隔符
       if (first || separator == null) {
         context = new PrefixedContext(context, "");
       } else {
@@ -93,6 +95,7 @@ public class ForEachSqlNode implements SqlNode {
         applyIndex(context, i, uniqueNumber);
         applyItem(context, o, uniqueNumber);
       }
+      // 这里使用了两重代理，一重代理是PrefixedContext添加分隔符，二重代理是FilteredDynamicContext做替换
       contents.apply(new FilteredDynamicContext(configuration, context, index, item, uniqueNumber));
       if (first) {
         first = !((PrefixedContext) context).isPrefixApplied();
@@ -108,7 +111,9 @@ public class ForEachSqlNode implements SqlNode {
 
   private void applyIndex(DynamicContext context, Object o, int i) {
     if (index != null) {
+      // 这个bind是临时使用，下一次循环之前要删掉
       context.bind(index, o);
+      // 这个bind使用了唯一的索引，在循环过程中会一直存在
       context.bind(itemizeItem(index, i), o);
     }
   }
@@ -169,6 +174,11 @@ public class ForEachSqlNode implements SqlNode {
     @Override
     public void appendSql(String sql) {
       GenericTokenParser parser = new GenericTokenParser("#{", "}", content -> {
+        // 这个机制的目的是为 <foreach> 循环中的每个元素生成唯一的参数名，避免参数名冲突。例如：
+        // 原始参数：#{item}
+        // 第一次循环后变成：#{__frch_item_0}
+        // 第二次循环后变成：#{__frch_item_1}
+        // 这样可以确保每个循环迭代中的参数都是唯一的，防止 SQL 参数绑定时出现冲突
         String newContent = content.replaceFirst("^\\s*" + item + "(?![^.,:\\s])", itemizeItem(item, index));
         if (itemIndex != null && newContent.equals(content)) {
           newContent = content.replaceFirst("^\\s*" + itemIndex + "(?![^.,:\\s])", itemizeItem(itemIndex, index));
