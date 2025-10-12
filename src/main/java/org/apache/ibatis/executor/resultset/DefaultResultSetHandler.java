@@ -360,6 +360,15 @@ public class DefaultResultSetHandler implements ResultSetHandler {
       ResultHandler<?> resultHandler, RowBounds rowBounds, ResultMapping parentMapping) throws SQLException {
     DefaultResultContext<Object> resultContext = new DefaultResultContext<>();
     ResultSet resultSet = rsw.getResultSet();
+    // MyBatis 的分页机制确实是在框架层面实现的，而不是直接依赖数据库的物理分页
+    // 为什么这样设计？
+    // 通用性考虑: 不同数据库的物理分页语法不同（MySQL 使用 LIMIT，Oracle 使用 ROWNUM，SQL Server 使用 TOP），MyBatis 为了保持通用性，采用了应用层分页
+    // 兼容性考虑: 可以适用于任何支持标准 SQL 的数据库
+    // 灵活性: 允许在获取结果后再进行进一步处理
+    // 虽然 MyBatis 提供了逻辑分页，但也支持通过插件实现物理分页：
+    // PageHelper 插件: 最常用的 MyBatis 分页插件，它会在 SQL 执行前重写 SQL 语句添加物理分页
+    // 自定义拦截器: 可以编写拦截器修改 SQL 语句，添加数据库特定的分页语法
+    // 数据库方言配置: 在 MyBatis-Plus 中提供了多种数据库的分页方言支持
     skipRows(resultSet, rowBounds);
     while (shouldProcessMoreRows(resultContext, rowBounds) && !resultSet.isClosed() && resultSet.next()) {
       ResultMap discriminatedResultMap = resolveDiscriminatedResultMap(resultSet, resultMap, null);
@@ -410,6 +419,9 @@ public class DefaultResultSetHandler implements ResultSetHandler {
     final ResultLoaderMap lazyLoader = new ResultLoaderMap();
     Object rowValue = createResultObject(rsw, resultMap, lazyLoader, columnPrefix);
     if (rowValue != null && !hasTypeHandlerForResultObject(rsw, resultMap.getType())) {
+      // rowValue 引用的对象本身不会被替换，但对象的属性值会被填充或更新
+      // 通过 metaObject.setValue(property, value) 对对象属性进行设置
+      // 最终返回的可能是同一个对象实例，但其内部状态已经发生了变化
       final MetaObject metaObject = configuration.newMetaObject(rowValue);
       boolean foundValues = this.useConstructorMappings;
       if (shouldApplyAutomaticMappings(resultMap, false)) {
@@ -677,6 +689,12 @@ public class DefaultResultSetHandler implements ResultSetHandler {
     final Class<?> resultType = resultMap.getType();
     final MetaClass metaType = MetaClass.forClass(resultType, reflectorFactory);
     final List<ResultMapping> constructorMappings = resultMap.getConstructorResultMappings();
+    // MyBatis 通过 TypeHandler 来处理 Java 类型与 JDBC 类型之间的转换。如果一个类型有对应的 TypeHandler，则被认为是简单类型
+    // 基本数据类型及其包装类：int/Integer、long/Long、double/Double、boolean/Boolean 等
+    // 字符串类型：String
+    // 日期时间类型：Date、LocalDateTime 等
+    // 大数字类型：BigDecimal、BigInteger
+    // 其他可以直接映射的类型
     if (hasTypeHandlerForResultObject(rsw, resultType)) {
       return createPrimitiveResultObject(rsw, resultMap, columnPrefix);
     }
@@ -741,6 +759,8 @@ public class DefaultResultSetHandler implements ResultSetHandler {
     if (annotated.isPresent()) {
       return annotated;
     }
+    // 如果启用了基于参数名的构造函数自动映射，但类有多个构造函数，要求必须使用 @AutomapConstructor 注解指定
+    // 否则，使用基于参数类型的匹配方式查找可用构造函数
     if (configuration.isArgNameBasedConstructorAutoMapping()) {
       // Finding-best-match type implementation is possible,
       // but using @AutomapConstructor seems sufficient.
@@ -1265,6 +1285,7 @@ public class DefaultResultSetHandler implements ResultSetHandler {
   }
 
   private boolean hasTypeHandlerForResultObject(ResultSetWrapper rsw, Class<?> resultType) {
+    // MyBatis 通过 TypeHandler 来处理 Java 类型与 JDBC 类型之间的转换。如果一个类型有对应的 TypeHandler，则被认为是简单类型
     if (rsw.getColumnNames().size() == 1) {
       return typeHandlerRegistry.hasTypeHandler(resultType, rsw.getJdbcType(rsw.getColumnNames().get(0)));
     }
