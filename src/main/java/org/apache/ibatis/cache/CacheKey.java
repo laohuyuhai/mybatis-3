@@ -32,7 +32,7 @@ public class CacheKey implements Cloneable, Serializable {
   public static final CacheKey NULL_CACHE_KEY = new CacheKey() {
 
     private static final long serialVersionUID = 1L;
-
+    // 没有显示定义构造函数，默认构造函数会自动调用父类的无参构造函数
     @Override
     public void update(Object object) {
       throw new CacheException("Not allowed to update a null cache key instance.");
