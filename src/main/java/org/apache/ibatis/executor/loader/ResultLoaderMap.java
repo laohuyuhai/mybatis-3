@@ -94,6 +94,8 @@ public class ResultLoaderMap {
 
   public void loadAll() throws SQLException {
     final Set<String> methodNameSet = loaderMap.keySet();
+    // 直接遍历 methodNameSet 的同时可能会修改 loaderMap（因为 load() 方法会从 loaderMap 中移除元素）
+    // 所以这里使用数组副本，避免 ConcurrentModificationException
     String[] methodNames = methodNameSet.toArray(new String[methodNameSet.size()]);
     for (String methodName : methodNames) {
       load(methodName);
