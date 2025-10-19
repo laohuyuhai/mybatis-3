@@ -650,6 +650,7 @@ public class DefaultResultSetHandler implements ResultSetHandler {
       String[] columnsArray = columns.split(",");
       String[] namesArray = names.split(",");
       for (int i = 0; i < columnsArray.length; i++) {
+        // 这里取的是列名对应的值
         Object value = rs.getString(columnsArray[i]);
         if (value != null) {
           cacheKey.update(namesArray[i]);
