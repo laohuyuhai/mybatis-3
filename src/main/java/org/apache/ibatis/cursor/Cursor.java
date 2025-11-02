@@ -24,6 +24,7 @@ import java.io.Closeable;
  *
  * @author Guillaume Darmont / guillaume@dropinocean.com
  */
+// 一个接口可以继承多个接口，但是一个类只能继承一个父类
 public interface Cursor<T> extends Closeable, Iterable<T> {
 
   /**

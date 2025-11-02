@@ -151,6 +151,7 @@ public class DefaultResultSetHandler implements ResultSetHandler {
       final ParameterMapping parameterMapping = parameterMappings.get(i);
       if (parameterMapping.getMode() == ParameterMode.OUT || parameterMapping.getMode() == ParameterMode.INOUT) {
         if (ResultSet.class.equals(parameterMapping.getJavaType())) {
+          // 因为 JDBC API 中参数和列的索引都是从 1 开始计数的，而不是从 0 开始,所以这里是i+1
           handleRefCursorOutputParameter((ResultSet) cs.getObject(i + 1), parameterMapping, metaParam);
         } else {
           final TypeHandler<?> typeHandler = parameterMapping.getTypeHandler();
